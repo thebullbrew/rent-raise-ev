@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Raise or Keep? — The Rent-Increase Math</title>
+<meta name="description" content="Expected-value math on a rent increase: weigh the extra annual rent against the true cost of a turnover before you raise.">
+<meta name="theme-color" content="#1F3522">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+:root{
+  --green:#1F3522; --ivory:#F5F2E8; --gold:#B49A5B; --oxblood:#5C2A2A; --char:#2C2C2C;
+  --paper:#FBF9F2; --line:#E3DCC6; --muted:#7A7566;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{margin:0; background:var(--ivory); color:var(--char);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px; line-height:1.5}
+h1,h2,h3,.serif{font-family:Georgia,"Times New Roman",serif}
+.wrap{max-width:760px; margin:0 auto; padding:0 16px 120px}
+/* hero */
+.hero{background:var(--green); color:var(--ivory); padding:28px 20px 24px; border-bottom:4px solid var(--gold)}
+.hero-inner{max-width:760px; margin:0 auto}
+.eyebrow{color:var(--gold); letter-spacing:3px; font-size:12px; font-weight:700; text-transform:uppercase; margin:0 0 8px}
+.hero h1{margin:0 0 8px; font-size:34px; line-height:1.15; letter-spacing:.5px}
+.hero p.lede{margin:0; font-size:17px; color:#EDE7D3; max-width:36em}
+.hero p.lede strong{color:var(--gold)}
+/* cards */
+.card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:18px; margin:16px 0}
+.card h2{margin:0 0 4px; font-size:23px; color:var(--green)}
+.card .sub{color:var(--muted); font-size:14.5px; margin:0 0 12px}
+label{display:block; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin:14px 0 6px}
+input[type=number],input[type=text],select{width:100%; font-size:18px; padding:13px 12px; border-radius:10px;
+  border:1.5px solid var(--line); background:#fff; color:var(--char); min-height:52px}
+input:focus,select:focus{outline:2px solid var(--gold); border-color:var(--gold)}
+.hint{font-size:13px; color:var(--muted); margin-top:5px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+/* rating buttons */
+.rate-row{display:flex; gap:8px}
+.rate{flex:1; border:2px solid var(--line); background:#fff; border-radius:12px; padding:12px 6px; cursor:pointer; text-align:center}
+.rate .g{font-size:26px; font-weight:800; font-family:Georgia,serif; color:var(--green)}
+.rate .d{font-size:12px; color:var(--muted); margin-top:2px; line-height:1.3}
+.rate.on{border-color:var(--gold); background:#FFFDF4; box-shadow:0 0 0 1px var(--gold)}
+/* slider */
+input[type=range]{width:100%; accent-color:var(--green); min-height:44px}
+.slider-val{display:flex; justify-content:space-between; align-items:baseline}
+.slider-val .big{font-family:Georgia,serif; font-size:34px; font-weight:800; color:var(--green)}
+.linklike{background:none; border:0; color:var(--green); font-size:14px; font-weight:700; text-decoration:underline; cursor:pointer; padding:4px 0}
+/* verdict */
+.verdict{border-radius:16px; padding:22px 18px; margin:20px 0; text-align:center; border:2px solid}
+.verdict.raise{background:#EEF4EA; border-color:#4E7A4A}
+.verdict.keep{background:#F7EAEA; border-color:var(--oxblood)}
+.verdict.coin{background:#F6F1E2; border-color:var(--gold)}
+.verdict .word{font-family:Georgia,serif; font-size:42px; font-weight:800; margin:0 0 4px; letter-spacing:1px}
+.verdict.raise .word{color:#2F5C2A}
+.verdict.keep .word{color:var(--oxblood)}
+.verdict.coin .word{color:#7A6420}
+.verdict .ev{font-size:19px; margin:0 0 8px}
+.verdict .why{font-size:15px; color:var(--char); max-width:34em; margin:0 auto}
+.statgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0}
+@media(max-width:520px){.statgrid{grid-template-columns:1fr}}
+.stat{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px}
+.stat .v{font-family:Georgia,serif; font-size:26px; font-weight:700; color:var(--green)}
+.stat .v.bad{color:var(--oxblood)}
+.stat .l{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px}
+.stat .n{font-size:13px; color:var(--muted); margin-top:4px; line-height:1.4}
+/* table */
+table{width:100%; border-collapse:collapse; font-size:15px; margin-top:8px}
+th,td{padding:10px 8px; text-align:right; border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted)}
+tr.hl td{background:#FFF7E0; font-weight:800}
+td.pos{color:#2F5C2A; font-weight:700}
+td.neg{color:var(--oxblood); font-weight:700}
+/* buttons */
+.btn{display:block; width:100%; border:0; border-radius:14px; font-size:18px; font-weight:800;
+  padding:16px; cursor:pointer; min-height:58px; margin-top:12px}
+.btn-gold{background:var(--gold); color:var(--green)}
+.btn-green{background:var(--green); color:var(--ivory)}
+.btn-ghost{background:transparent; color:var(--green); border:2px solid var(--green)}
+.btn:active{transform:scale(.98)}
+.btn-row{display:flex; gap:10px}
+.btn-row .btn{flex:1; font-size:16px; min-height:52px}
+/* scenario list */
+.scen{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin:10px 0}
+.scen .top{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.scen .nm{font-weight:800; font-size:17px}
+.scen .tag{font-size:12px; font-weight:800; padding:4px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:1px}
+.tag.raise{background:#DDEBD8; color:#2F5C2A}
+.tag.keep{background:#F2DADA; color:var(--oxblood)}
+.tag.coin{background:#F3E9C8; color:#7A6420}
+.scen .det{font-size:14px; color:var(--muted); margin-top:6px}
+.scen .acts{display:flex; gap:8px; margin-top:10px}
+.mini{flex:1; border:1.5px solid var(--line); background:var(--paper); border-radius:10px; padding:9px;
+  font-size:14px; font-weight:700; color:var(--green); cursor:pointer}
+/* method */
+.method{background:var(--green); color:#EDE7D3; border-radius:16px; padding:22px 18px; margin:24px 0}
+.method h2{color:var(--gold); margin:0 0 10px; font-size:24px}
+.method p{margin:0 0 12px; font-size:15.5px}
+.method .formula{background:rgba(245,242,232,.08); border:1px solid rgba(180,154,91,.5);
+  border-radius:10px; padding:12px 14px; font-family:Georgia,serif; font-size:16.5px; color:var(--ivory); margin:12px 0}
+footer{color:var(--muted); font-size:13px; text-align:center; margin-top:30px}
+.empty{color:var(--muted); font-style:italic; text-align:center; padding:14px}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">The Bull Brew · Landlord Tool</p>
+    <h1>Raise or Keep?</h1>
+    <p class="lede">One turnover erases <strong>years</strong> of a small raise. Run the expected-value math <strong>before</strong> you knock on the door.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="card" id="inputs">
+    <h2>Your numbers</h2>
+    <p class="sub">Answer honestly — especially the last one. Landlords lie to themselves about this number.</p>
+
+    <label for="sname">Unit nickname (optional)</label>
+    <input type="text" id="sname" placeholder="e.g. 4B — Maple St duplex">
+
+    <div class="grid2">
+      <div>
+        <label for="rent">Current monthly rent</label>
+        <input type="number" id="rent" inputmode="decimal" min="0" step="10" value="1800">
+      </div>
+      <div>
+        <label for="newrent">Proposed new rent</label>
+        <input type="number" id="newrent" inputmode="decimal" min="0" step="10" value="1875">
+        <div class="hint" id="raise-hint"></div>
+      </div>
+    </div>
+
+    <label>Tenant rating — be honest</label>
+    <div class="rate-row" id="rates">
+      <button class="rate" data-r="A" aria-pressed="false">
+        <div class="g">A</div><div class="d">Pays on time, never calls</div>
+      </button>
+      <button class="rate" data-r="B" aria-pressed="true">
+        <div class="g">B</div><div class="d">Fine. Occasional hiccup</div>
+      </button>
+      <button class="rate" data-r="C" aria-pressed="false">
+        <div class="g">C</div><div class="d">Late sometimes, high maintenance</div>
+      </button>
+    </div>
+    <div class="hint">An A tenant who pays like clockwork is worth more than $50 more from a stranger. The rating sets the suggested walk-away chance below.</div>
+
+    <label for="pleave">Chance the tenant walks at this increase</label>
+    <div class="slider-val">
+      <span class="big" id="pleave-val">30%</span>
+      <button class="linklike" id="suggest-btn">Use suggested: <span id="suggest-val"></span></button>
+    </div>
+    <input type="range" id="pleave" min="0" max="95" step="5" value="30">
+
+    <div class="grid2">
+      <div>
+        <label for="vacdays">Days to fill a vacancy in your market</label>
+        <input type="number" id="vacdays" inputmode="numeric" min="0" step="1" value="30">
+        <div class="hint">How long the unit sits empty between tenants. Not what your agent promises — what actually happens.</div>
+      </div>
+      <div>
+        <label for="turncost">Turnover cost</label>
+        <input type="number" id="turncost" inputmode="decimal" min="0" step="50" value="2200">
+        <div class="hint">Paint, clean, small repairs, photos, listing, leasing fee. One number.</div>
+      </div>
+    </div>
+
+    <button class="btn btn-gold" id="calc">Run the math</button>
+  </section>
+
+  <section id="results" style="display:none">
+    <div class="verdict" id="verdict">
+      <p class="word" id="v-word"></p>
+      <p class="ev" id="v-ev"></p>
+      <p class="why" id="v-why"></p>
+    </div>
+
+    <div class="statgrid">
+      <div class="stat"><div class="v" id="s-gain"></div><div class="l">Extra rent / year if they stay</div></div>
+      <div class="stat"><div class="v bad" id="s-loss"></div><div class="l">Cost if they leave</div><div class="n" id="s-loss-n"></div></div>
+      <div class="stat"><div class="v" id="s-months"></div><div class="l">Months of raise erased by one turnover</div><div class="n">How long it takes the raise to pay for the turnover it caused.</div></div>
+      <div class="stat"><div class="v" id="s-breakeven"></div><div class="l">Walk-away chance you can afford</div><div class="n">Above this, the raise is negative expected value. Know your line before you negotiate.</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Sensitivity check</h2>
+      <p class="sub">Expected value at different walk-away chances. Your slider row is highlighted.</p>
+      <table id="sens">
+        <thead><tr><th>Walks away</th><th>Expected value</th><th>Call</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <button class="btn btn-green" id="save">Save this scenario</button>
+  </section>
+
+  <section class="card" id="saved">
+    <h2>Saved scenarios</h2>
+    <p class="sub">Kept on this device only. Compare units side by side.</p>
+    <div id="scen-list"></div>
+  </section>
+
+  <section class="method">
+    <h2>The method</h2>
+    <p>A rent increase is a bet, not a decision. Every raise carries two outcomes, and most landlords only price one of them — the extra income. The other one, a turnover, is bigger than it feels: vacancy loss plus make-ready cost, plus the quiet risk that the next tenant pays late.</p>
+    <div class="formula">Expected value = (1 − p) × annual raise − p × turnover cost</div>
+    <p>where <em>p</em> is your honest chance the tenant walks. A $75 raise is $900 a year. A single 30-day turnover on an $1,875 unit plus $2,200 of make-ready is over $4,000. The raise has to win roughly 4 out of 5 coin flips just to break even. That's the asymmetry: small gains, occasionally large losses. Run it, respect it.</p>
+    <p style="margin-bottom:0">A known good tenant is an asset. Price the raise like you'd price losing one.</p>
+  </section>
+
+  <footer>
+    Back-of-the-envelope math, not legal or tax advice. Numbers stay in your browser — nothing is sent anywhere.
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const money = n => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
+const money2 = n => "$" + Math.round(n).toLocaleString("en-US");
+let rating = "B";
+const BASE = { A: 15, B: 30, C: 45 };
+
+function num(id, dflt) {
+  const v = parseFloat($(id).value);
+  return (isFinite(v) && v >= 0) ? v : dflt;
+}
+
+function suggestedLeave() {
+  const cur = num("rent", 0), prop = num("newrent", 0);
+  const inc = prop - cur;
+  const pct = cur > 0 ? (inc / cur) * 100 : 0;
+  let s = BASE[rating] + pct * 2.5;
+  s = Math.max(0, Math.min(90, Math.round(s / 5) * 5));
+  return s;
+}
+
+function core(pLeave) {
+  const cur = num("rent", 0), prop = num("newrent", 0);
+  const inc = Math.max(0, prop - cur);
+  const vac = num("vacdays", 30);
+  const tc = num("turncost", 0);
+  const gain = 12 * inc;
+  const vacLoss = prop * (vac / 30.44);
+  const loss = vacLoss + tc;
+  const ev = (1 - pLeave) * gain - pLeave * loss;
+  const breakeven = (gain + loss) > 0 ? gain / (gain + loss) : 0;
+  const monthsErased = inc > 0 ? loss / inc : Infinity;
+  return { cur, prop, inc, vac, tc, gain, vacLoss, loss, ev, breakeven, monthsErased };
+}
+
+function verdictOf(ev) {
+  if (ev > 250) return "raise";
+  if (ev < -250) return "keep";
+  return "coin";
+}
+
+function calc() {
+  const p = parseInt($("pleave").value, 10) / 100;
+  const r = core(p);
+  const v = verdictOf(r.ev);
+
+  const box = $("verdict");
+  box.className = "verdict " + v;
+  const word = $("v-word"), evEl = $("v-ev"), why = $("v-why");
+
+  if (r.inc <= 0) {
+    word.textContent = "HOLD ON";
+    evEl.textContent = "The proposed rent is not higher than the current rent.";
+    why.textContent = "No raise, no bet. Check your numbers above and run it again.";
+  } else if (v === "raise") {
+    word.textContent = "RAISE";
+    evEl.innerHTML = "Expected value: <strong>" + money(r.ev) + "</strong> over 12 months.";
+    why.textContent = "The math is on your side. The upside outweighs the walk-away risk — send the notice with confidence.";
+  } else if (v === "keep") {
+    word.textContent = "KEEP";
+    evEl.innerHTML = "Expected value: <strong>" + money(r.ev) + "</strong> over 12 months.";
+    why.textContent = "One turnover would cost you " + Math.round(r.monthsErased) +
+      " months of this raise. A good tenant at the old rent beats an empty unit at the new one.";
+  } else {
+    word.textContent = "COIN FLIP";
+    evEl.innerHTML = "Expected value: <strong>" + money(r.ev) + "</strong> — basically a wash.";
+    why.textContent = "The math shrugs. Decide on the tenant: keep an A, raise on a C, and negotiate in person for a B.";
+  }
+
+  $("s-gain").textContent = money2(r.gain);
+  $("s-loss").textContent = money2(r.loss);
+  $("s-loss-n").textContent = "Vacancy " + money2(r.vacLoss) + " + turnover " + money2(r.tc) + ".";
+  $("s-months").textContent = isFinite(r.monthsErased) ? Math.round(r.monthsErased) : "—";
+  $("s-breakeven").textContent = Math.round(r.breakeven * 100) + "%";
+
+  const tb = $("sens").querySelector("tbody");
+  tb.innerHTML = "";
+  [0, 5, 10, 20, 30, 50, 75].forEach(pp => {
+    const rr = core(pp / 100);
+    const vv = verdictOf(rr.ev);
+    const tr = document.createElement("tr");
+    if (pp === parseInt($("pleave").value, 10)) tr.className = "hl";
+    const call = vv === "raise" ? "Raise" : vv === "keep" ? "Keep" : "Flip";
+    tr.innerHTML = "<td>" + pp + "%</td><td class='" + (rr.ev >= 0 ? "pos" : "neg") + "'>" +
+      money(rr.ev) + "</td><td>" + call + "</td>";
+    tb.appendChild(tr);
+  });
+
+  $("results").style.display = "block";
+  $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+  return { r, p, verdict: v };
+}
+
+/* rating buttons */
+$("rates").addEventListener("click", e => {
+  const b = e.target.closest(".rate");
+  if (!b) return;
+  rating = b.dataset.r;
+  document.querySelectorAll(".rate").forEach(x => {
+    const on = x === b;
+    x.classList.toggle("on", on);
+    x.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  refreshSuggest();
+});
+
+/* suggested leave chance */
+function refreshSuggest() {
+  const s = suggestedLeave();
+  $("suggest-val").textContent = s + "%";
+  const inc = num("newrent", 0) - num("rent", 0);
+  $("raise-hint").textContent = inc > 0
+    ? "That's +" + money2(inc) + "/mo (" + (num("rent", 0) > 0
+      ? (inc / num("rent", 1) * 100).toFixed(1) : "0") + "%)."
+    : inc < 0 ? "That's a rent cut — brave." : "";
+}
+["rent", "newrent"].forEach(id => $(id).addEventListener("input", refreshSuggest));
+$("suggest-btn").addEventListener("click", () => {
+  const s = suggestedLeave();
+  $("pleave").value = s;
+  $("pleave-val").textContent = s + "%";
+});
+$("pleave").addEventListener("input", () => {
+  $("pleave-val").textContent = $("pleave").value + "%";
+});
+$("calc").addEventListener("click", calc);
+refreshSuggest();
+
+/* saved scenarios */
+const KEY = "rentRaiseEv.scenarios.v1";
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; }
+}
+function storeAll(a) { localStorage.setItem(KEY, JSON.stringify(a)); }
+
+function scenarioSnapshot() {
+  const p = parseInt($("pleave").value, 10) / 100;
+  const r = core(p);
+  return {
+    id: Date.now(),
+    name: $("sname").value.trim() || ("Unit " + new Date().toLocaleDateString("en-US")),
+    rent: r.cur, newrent: r.prop, inc: r.inc, pleave: Math.round(p * 100),
+    rating, vacdays: r.vac, turncost: r.tc,
+    ev: Math.round(r.ev), verdict: r.inc > 0 ? verdictOf(r.ev) : "coin"
+  };
+}
+
+function renderSaved() {
+  const list = $("scen-list");
+  const all = loadAll();
+  if (!all.length) {
+    list.innerHTML = '<p class="empty">Nothing saved yet. Run the math above and save a unit to compare.</p>';
+    return;
+  }
+  list.innerHTML = "";
+  all.slice().reverse().forEach(s => {
+    const d = document.createElement("div");
+    d.className = "scen";
+    const tag = s.verdict === "raise" ? "Raise" : s.verdict === "keep" ? "Keep" : "Coin flip";
+    d.innerHTML =
+      '<div class="top"><span class="nm"></span><span class="tag ' + s.verdict + '">' + tag + "</span></div>" +
+      '<div class="det">' + money2(s.rent) + " → " + money2(s.newrent) +
+      " (+" + money2(s.inc) + "/mo) · " + s.pleave + "% walk-away · tenant " + s.rating +
+      " · EV " + money(s.ev) + "</div>" +
+      '<div class="acts"><button class="mini" data-a="load">Load</button>' +
+      '<button class="mini" data-a="del">Delete</button></div>';
+    d.querySelector(".nm").textContent = s.name;
+    d.querySelector('[data-a="load"]').addEventListener("click", () => {
+      $("sname").value = s.name; $("rent").value = s.rent; $("newrent").value = s.newrent;
+      $("pleave").value = s.pleave; $("pleave-val").textContent = s.pleave + "%";
+      $("vacdays").value = s.vacdays; $("turncost").value = s.turncost;
+      rating = s.rating;
+      document.querySelectorAll(".rate").forEach(x => {
+        const on = x.dataset.r === rating;
+        x.classList.toggle("on", on);
+        x.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      refreshSuggest();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    d.querySelector('[data-a="del"]').addEventListener("click", () => {
+      storeAll(loadAll().filter(x => x.id !== s.id));
+      renderSaved();
+    });
+    list.appendChild(d);
+  });
+}
+
+$("save").addEventListener("click", () => {
+  const snap = scenarioSnapshot();
+  const all = loadAll();
+  all.push(snap);
+  storeAll(all);
+  renderSaved();
+  $("saved").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+renderSaved();
+</script>
+</body>
+</html>
